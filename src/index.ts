@@ -1,191 +1,328 @@
-// 1. Define Question type with literal type for correctAnswer
-type Question = {
-    id: number;
-    questionTuple: [string, string[]]; // Tuple for question and options
-    correctAnswer: "A" | "B" | "C" | "D";
+// 1. Create type alias Stock with enum for sector and union type for status
+enum Sector {
+    TECHNOLOGY = "💻 Technology",
+    FINANCE = "💰 Finance",
+    HEALTHCARE = "🏥 Healthcare",
+    ENERGY = "⚡ Energy",
+    CONSUMER = "🛍️ Consumer",
+    AUTOMOTIVE = "🚗 Automotive",
+    COMMUNICATION = "📡 Communication",
+    INDUSTRIAL = "🏭 Industrial"
+}
+
+type Stock = {
+    symbol: string;
+    name: string;
+    quantity: number;
+    price: number;
+    sector: Sector;
+    status: "active" | "sold" | "watching";
+    lastUpdated: Date;
 };
 
-// 2. Store questions in an array
-const questions: Question[] = [
+// 2. Define a tuple for [stockSymbol, quantityOwned, purchaseDate]
+type StockQuantityTuple = [string, number, Date];
+
+// 3. Create enhanced portfolio array with more stocks
+let portfolio: Stock[] = [
     {
-        id: 1,
-        questionTuple: [
-            "What is TypeScript?",
-            ["A JavaScript framework", "A superset of JavaScript", "A database language", "A CSS preprocessor"]
-        ],
-        correctAnswer: "B"
+        symbol: "AAPL",
+        name: "Apple Inc.",
+        quantity: 15,
+        price: 189.37,
+        sector: Sector.TECHNOLOGY,
+        status: "active",
+        lastUpdated: new Date("2023-05-15")
     },
     {
-        id: 2,
-        questionTuple: [
-            "Which of these is a tuple in TypeScript?",
-            ["number[]", "[string, number]", "Array<string>", "any[]"]
-        ],
-        correctAnswer: "B"
+        symbol: "MSFT",
+        name: "Microsoft Corporation",
+        quantity: 8,
+        price: 328.39,
+        sector: Sector.TECHNOLOGY,
+        status: "active",
+        lastUpdated: new Date("2023-06-20")
     },
     {
-        id: 3,
-        questionTuple: [
-            "What does 'never' represent in TypeScript?",
-            ["A function that doesn't return", "A value that never occurs", "A deprecated feature", "An async function"]
-        ],
-        correctAnswer: "B"
+        symbol: "JPM",
+        name: "JPMorgan Chase & Co.",
+        quantity: 0,
+        price: 168.45,
+        sector: Sector.FINANCE,
+        status: "sold",
+        lastUpdated: new Date("2023-03-10")
     },
     {
-        id: 4,
-        questionTuple: [
-            "What is the purpose of 'as' keyword in TypeScript?",
-            ["To create a new variable", "For type assertion", "To import modules", "For asynchronous operations"]
-        ],
-        correctAnswer: "B"
+        symbol: "AMZN",
+        name: "Amazon.com Inc.",
+        quantity: 0,
+        price: 125.98,
+        sector: Sector.CONSUMER,
+        status: "watching",
+        lastUpdated: new Date("2023-07-01")
     },
     {
-        id: 5,
-        questionTuple: [
-            "Which TypeScript feature allows a function to accept any number of arguments?",
-            ["Generics", "Rest parameters", "Function overloading", "Type aliases"]
-        ],
-        correctAnswer: "B"
+        symbol: "TSLA",
+        name: "Tesla Inc.",
+        quantity: 5,
+        price: 265.28,
+        sector: Sector.AUTOMOTIVE,
+        status: "active",
+        lastUpdated: new Date("2023-07-15")
+    },
+    {
+        symbol: "GOOGL",
+        name: "Alphabet Inc.",
+        quantity: 3,
+        price: 125.75,
+        sector: Sector.COMMUNICATION,
+        status: "active",
+        lastUpdated: new Date("2023-06-05")
+    },
+    {
+        symbol: "META",
+        name: "Meta Platforms Inc.",
+        quantity: 0,
+        price: 298.61,
+        sector: Sector.COMMUNICATION,
+        status: "watching",
+        lastUpdated: new Date("2023-07-10")
+    },
+    {
+        symbol: "V",
+        name: "Visa Inc.",
+        quantity: 10,
+        price: 240.50,
+        sector: Sector.FINANCE,
+        status: "active",
+        lastUpdated: new Date("2023-05-22")
     }
 ];
 
-// Properly typed User interface
-interface User {
-    id: string;
-    name: string;
-    email?: string;
-    score: number;
-    answers: Array<{ questionId: number; correct: boolean }>;
-}
-
-// Initialize currentUser with proper type
-let currentUser: User = {
-    id: '',
-    name: '',
-    score: 0,
-    answers: []
+// Helper function to format currency
+const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-US', { 
+        style: 'currency', 
+        currency: 'USD' 
+    }).format(amount);
 };
 
-// 4. Function expression with callback for validation
-const validateAnswer = function(
-    questionId: number, 
-    userAnswer: string, 
-    callback: (isCorrect: boolean) => void
-): void {
-    const question = questions.find(q => q.id === questionId);
-    if (!question) {
-        callback(false);
-        return;
-    }
-    
-    // 5. Type assertion with 'as'
-    const assertedAnswer = userAnswer.toUpperCase() as "A" | "B" | "C" | "D";
-    const isCorrect = assertedAnswer === question.correctAnswer;
-    
-    currentUser.answers.push({ questionId, correct: isCorrect });
-    if (isCorrect) {
-        currentUser.score += 1;
-    }
-    
-    callback(isCorrect);
+// Helper function to format date
+const formatDate = (date: Date): string => {
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+    });
 };
 
-// 6. askQuestion function with type safety
-function askQuestion(qId: number, userAnswer: string): void {
-    const question = questions.find(q => q.id === qId);
-    if (!question) {
-        console.log(`❌ Question with ID ${qId} not found!`);
-        return;
+// Helper function to get status emoji
+const getStatusEmoji = (status: "active" | "sold" | "watching"): string => {
+    switch (status) {
+        case "active": return "✅";
+        case "sold": return "💰";
+        case "watching": return "👀";
+        default: return "❓";
     }
+};
 
-    const [questionText, options] = question.questionTuple;
-    console.log(`\n📝 Question ${qId}: ${questionText}`);
-    options.forEach((option, index) => {
-        console.log(`   ${String.fromCharCode(65 + index)}. ${option}`);
+// 4. Enhanced function with rest parameters to add multiple stocks
+function addStock(...stocks: Stock[]): void {
+    const now = new Date();
+    stocks.forEach(stock => {
+        stock.lastUpdated = now;
+        portfolio.push(stock);
     });
-
-    validateAnswer(qId, userAnswer, (isCorrect) => {
-        console.log(`   🎯 Your answer '${userAnswer.toUpperCase()}' is ${isCorrect ? '✅ CORRECT!' : '❌ INCORRECT!'}`);
-    });
+    console.log(`📥 Added ${stocks.length} stock(s) to portfolio on ${formatDate(now)}`);
 }
 
-// 7. Score calculator function with proper error handling
-function calculateScore(scores: number[]): number {
-    const total = scores.reduce((sum, score) => sum + score, 0);
+// 5. Enhanced function overloading for getStockDetails
+function getStockDetails(symbol: string): Stock | undefined;
+function getStockDetails(symbol: string, includePrice: boolean): string;
+function getStockDetails(symbol: string, includePrice?: boolean): Stock | string | undefined {
+    const stock = portfolio.find(s => s.symbol === symbol);
     
-    if (total < 0) {
-        throw new Error("Invalid score: Score cannot be negative");
+    if (!stock) {
+        console.log(`❌ Stock with symbol ${symbol} not found`);
+        return undefined;
     }
     
-    return total;
-}
-
-// 8. Using rest parameters to answer multiple questions
-function answerMultipleQuestions(...answers: [number, string][]): void {
-    console.log("\n🔮 Answering multiple questions...");
-    answers.forEach(([questionId, answer]) => {
-        askQuestion(questionId, answer);
-    });
-}
-
-// 9. Function overloading for submitQuiz
-function submitQuiz(userId: string): void;
-function submitQuiz(userId: string, email: string): void;
-function submitQuiz(userId: string, email?: string): void {
-    console.log(`\n📤 Quiz submitted by ${currentUser.name} (ID: ${userId})${email ? `, email: ${email}` : ''}`);
-    console.log(`🏆 Final Score: ${currentUser.score}/${questions.length}`);
+    if (includePrice) {
+        const emoji = getStatusEmoji(stock.status);
+        return `${emoji} ${stock.symbol} (${stock.name}): ${stock.quantity} shares at ${formatCurrency(stock.price)} each (${stock.status}, last updated ${formatDate(stock.lastUpdated)})`;
+    }
     
-    console.log("📊 Detailed Results:");
-    currentUser.answers.forEach((answer: { questionId: number; correct: boolean }) => {
-        const question = questions.find(q => q.id === answer.questionId);
-        const status = answer.correct ? '✅' : '❌';
-        console.log(`   Q${answer.questionId}: ${status} - ${question?.questionTuple[0]}`);
+    return stock;
+}
+
+// 6. Enhanced type assertion with 'as' keyword
+function parseStockData(jsonData: string): Stock {
+    try {
+        const data = JSON.parse(jsonData);
+        // Using type assertion with additional validation
+        if (!data.symbol || !data.name) {
+            throw new Error("Invalid stock data");
+        }
+        return {
+            ...data as Stock,
+            lastUpdated: new Date(data.lastUpdated || new Date())
+        };
+    } catch (error) {
+        console.error("❌ Error parsing stock data:", error);
+        throw error;
+    }
+}
+
+// 7. Enhanced callback-based function to filter stocks
+function filterStocks(callback: (stock: Stock) => boolean): Stock[] {
+    const result = portfolio.filter(callback);
+    console.log(`🔍 Found ${result.length} stocks matching your criteria`);
+    return result;
+}
+
+// 8. Enhanced function type expression for logStockSummary
+type LogStockSummaryFn = (stocks: Stock[], showDetails?: boolean) => void;
+
+const logStockSummary: LogStockSummaryFn = (stocks, showDetails = false) => {
+    console.log("📊 === Stock Portfolio Summary ===");
+    console.log(`📌 Total Stocks: ${stocks.length}`);
+    
+    const totalValue = stocks.reduce((sum, stock) => sum + (stock.quantity * stock.price), 0);
+    console.log(`💰 Total Portfolio Value: ${formatCurrency(totalValue)}`);
+    
+    if (showDetails) {
+        stocks.forEach(stock => {
+            const value = stock.quantity * stock.price;
+            console.log(
+                `${getStatusEmoji(stock.status)} ${stock.symbol.padEnd(5)}: ` +
+                `${stock.quantity.toString().padStart(3)} shares ` +
+                `@ ${formatCurrency(stock.price).padStart(10)} ` +
+                `= ${formatCurrency(value).padStart(12)} ` +
+                `| ${stock.sector} | ${formatDate(stock.lastUpdated)}`
+            );
+        });
+    }
+    console.log("📊 ===============================");
+};
+
+// 9. Enhanced void function to display all stocks
+function displayAllStocks(): void {
+    console.log("📋 === All Stocks in Portfolio ===");
+    portfolio.forEach((stock, index) => {
+        console.log(
+            `${(index + 1).toString().padStart(2)}. ${getStatusEmoji(stock.status)} ` +
+            `${stock.symbol} - ${stock.name} | ` +
+            `Qty: ${stock.quantity} | ` +
+            `Price: ${formatCurrency(stock.price)} | ` +
+            `Sector: ${stock.sector} | ` +
+            `Updated: ${formatDate(stock.lastUpdated)}`
+        );
     });
 }
 
-// Initialize quiz for user with proper typing
-function startQuiz(userName: string, userId: string): void {
-    currentUser = {
-        id: userId,
-        name: userName,
-        score: 0,
-        answers: []
-    };
-    console.log(`\n🎉 Welcome to the TypeScript Quiz, ${userName}!`);
-    console.log(`🧠 You'll be tested on ${questions.length} TypeScript concepts.\n`);
+// 10. Enhanced function using never type for unexpected status
+function handleUnexpectedStatus(status: never): never {
+    const error = new Error(`🚨 Unexpected stock status: ${status}`);
+    console.error(error.message);
+    throw error;
 }
 
-// ===== MAIN QUIZ EXECUTION =====
-console.log("=== 🌟 TYPESCRIPT QUIZ SYSTEM 🌟 ===");
-
-// Start quiz for user
-startQuiz("Sarthak", "user_001");
-
-// Demonstrate single question answering
-console.log("\n--- 🧐 Single Question Demonstration ---");
-askQuestion(1, "B");
-
-// Demonstrate multiple questions with rest parameters
-answerMultipleQuestions(
-    [1, "B"],
-    [2, "B"],
-    [3, "B"],
-    [4, "B"],
-    [5, "B"]
-);
-
-// Demonstrate score calculation
-console.log("\n--- 📊 Score Calculation ---");
-try {
-    const scores = currentUser.answers.map(answer => answer.correct ? 1 : 0);
-    const calculatedScore = calculateScore(scores);
-    console.log(`Calculated score: ${calculatedScore}/${questions.length}`);
-} catch (error) {
-    console.error(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+function processStockStatus(stock: Stock): string {
+    const emoji = getStatusEmoji(stock.status);
+    switch (stock.status) {
+        case "active":
+            return `${emoji} ${stock.name} (${stock.symbol}) is active in your portfolio with ${stock.quantity} shares worth ${formatCurrency(stock.quantity * stock.price)}`;
+        case "sold":
+            return `${emoji} You sold your position in ${stock.name} (${stock.symbol}) on ${formatDate(stock.lastUpdated)}`;
+        case "watching":
+            return `${emoji} You're watching ${stock.name} (${stock.symbol}) - current price: ${formatCurrency(stock.price)}`;
+        default:
+            return handleUnexpectedStatus(stock.status);
+    }
 }
 
-// Demonstrate function overloading
-submitQuiz("user_001");
-submitQuiz("user_001", "sarthak@example.com");
+// ===== Test the enhanced implementation =====
+function runEnhancedPortfolioDemo() {
+    console.log("🚀 Starting Enhanced Portfolio Tracker Demo\n");
+    
+    // Display all stocks first
+    displayAllStocks();
+    console.log("");
+    
+    // Test adding new stocks
+    const newStocks: Stock[] = [
+        {
+            symbol: "NVDA",
+            name: "NVIDIA Corporation",
+            quantity: 7,
+            price: 459.77,
+            sector: Sector.TECHNOLOGY,
+            status: "active",
+            lastUpdated: new Date()
+        },
+        {
+            symbol: "WMT",
+            name: "Walmart Inc.",
+            quantity: 0,
+            price: 160.23,
+            sector: Sector.CONSUMER,
+            status: "watching",
+            lastUpdated: new Date()
+        }
+    ];
+    addStock(...newStocks);
+    console.log("");
+    
+    // Test tuple type with purchase date
+    const aaplStock: StockQuantityTuple = ["AAPL", 15, new Date("2023-05-15")];
+    console.log(`📅 Tuple example: ${aaplStock[0]} - ${aaplStock[1]} shares purchased on ${formatDate(aaplStock[2])}\n`);
+    
+    // Test function overloading
+    console.log("ℹ️ Stock details for MSFT (without price):", getStockDetails("MSFT"));
+    console.log("ℹ️ Stock details for MSFT (with price):", getStockDetails("MSFT", true));
+    console.log("");
+    
+    // Test type assertion with JSON parsing
+    const jsonStock = JSON.stringify({
+        symbol: "DIS",
+        name: "The Walt Disney Company",
+        quantity: 4,
+        price: 89.50,
+        sector: Sector.COMMUNICATION,
+        status: "active",
+        lastUpdated: new Date().toISOString()
+    });
+    try {
+        const parsedStock = parseStockData(jsonStock);
+        console.log("🔄 Parsed stock from JSON:", parsedStock);
+        addStock(parsedStock);
+    } catch (error) {
+        console.error("Failed to parse stock:", error);
+    }
+    console.log("");
+    
+    // Test filtering with callback
+    const activeTechStocks = filterStocks(stock => 
+        stock.status === "active" && stock.sector === Sector.TECHNOLOGY
+    );
+    console.log("💻 Active Technology Stocks:", activeTechStocks.length);
+    logStockSummary(activeTechStocks, true);
+    console.log("");
+    
+    // Test detailed summary
+    logStockSummary(portfolio, true);
+    console.log("");
+    
+    // Test status processing
+    console.log(processStockStatus(portfolio[0])); // AAPL - active
+    console.log(processStockStatus(portfolio[2])); // JPM - sold
+    console.log(processStockStatus(portfolio[3])); // AMZN - watching
+    console.log("");
+    
+    // Display final portfolio
+    console.log("🏁 Final Portfolio Overview");
+    logStockSummary(portfolio);
+}
 
-console.log("\n=== 🏁 QUIZ COMPLETED ===");
+// Run the enhanced demo when the script loads
+runEnhancedPortfolioDemo();
